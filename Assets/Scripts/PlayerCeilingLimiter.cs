@@ -16,7 +16,6 @@ public class PlayerCeilingLimiter : MonoBehaviour
                 // Get the value and set our flag to true so we don't run this block again.
                 maxY = GameManager.instance.currentLevelData.playerMaxY;
                 isMaxYSet = true;
-                Debug.Log("Player ceiling limiter is set to: " + maxY);
             }
         }
 

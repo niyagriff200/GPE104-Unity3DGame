@@ -12,7 +12,7 @@ public class PlayerHealth : Health
         // Pull health and lives values from GameManager for designer control
         maxHealth = GameManager.instance.playerMaxHealth;
         currentHealth = maxHealth;
-        startingLives = GameManager.instance.playerStartingLives;
+        startingLives = GameManager.instance.startingLives;
         currentLives = startingLives;
     }
 
@@ -25,11 +25,12 @@ public class PlayerHealth : Health
     protected override void Die()
     {
         currentLives--;
-      
-
+        Debug.Log("Current lives: " + currentLives);
+        
         // If player still has lives, reset health and reposition
         if (currentLives > 0)
         {
+         
             HealToFull(); // Restore health
             DeathRecenter recenter = GetComponent<DeathRecenter>();
             if (recenter != null)

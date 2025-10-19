@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class AstronautPickup : MonoBehaviour
 {
-    public float scoreValue;
+    private float scoreValue;
 
     private void Start()
     {
@@ -14,6 +14,7 @@ public class AstronautPickup : MonoBehaviour
         if (pawn != null)
         {
             GameManager.instance.AddScore(scoreValue);
+            Destroy(gameObject);
         }
     }
 }

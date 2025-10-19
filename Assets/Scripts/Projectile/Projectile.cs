@@ -2,15 +2,16 @@ using UnityEngine;
 
 public class Projectile : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    private void Start()
     {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
+        // Prevents lingering projectiles in the scene
+        if (GameManager.instance != null)
+        {
+            Destroy(gameObject, GameManager.instance.projectileLifetime);
+        }
+        else
+        {
+            Destroy(gameObject, 5f); // fallback in case GameManager is missing
+        }
     }
 }

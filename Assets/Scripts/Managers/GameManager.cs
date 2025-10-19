@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.SocialPlatforms.Impl;
 using static UnityEditor.Experimental.GraphView.GraphView;
 
 public class GameManager : MonoBehaviour
@@ -19,6 +18,9 @@ public class GameManager : MonoBehaviour
     [Header("Level Data")]
     public LevelData currentLevelData;
 
+    [Header("GameplayUI GUI")]
+    public GameplayUI gameplayUI;
+
     [Header("Prefabs")]
     public GameObject playerPawnPrefab;
     public GameObject playerControllerPrefab;
@@ -26,7 +28,8 @@ public class GameManager : MonoBehaviour
     public GameObject ufoPrefab;
     public GameObject meteorPrefab;
     public GameObject healthPackPrefab;
-    public GameObject projectilePrefab;
+    public GameObject playerProjectilePrefab;
+    public GameObject ufoProjectilePrefab;
 
     [Header("Audio Clips")]
     public AudioClip backgroundMusic;
@@ -45,30 +48,32 @@ public class GameManager : MonoBehaviour
     public float playerMoveSpeed;
     public float playerTurnSpeed;
     public float playerFireRate;
-    public float playerProjectileSpeed;
     public float playerMaxHealth;
-    public int playerStartingLives;
+    public int startingLives;
 
     [Header("UFO Settings")]
     public float ufoMoveSpeed;
     public float ufoTurnSpeed;
     public float ufoFireRate;
-    public float ufoProjectileSpeed;
     public float ufoMaxHealth;
-    public float ufoSpawnInterval;
+    public float ufoStoppingDistance;
 
     [Header("Projectile Settings")]
+    public GameObject defaultProjectile;
     public float projectileLifetime;
+    public float projectileSpeed;
     public float projectileDamage;
 
 
     [Header("Score Value Settings")]
     public float astronautScore;
+    public float ufoScore;
 
     [Header("Score Tracking")]
     public float score = 0f;
     public float topScore = 0f;
 
+    // Enforce singleton pattern
     private void Awake()
     {
         if (instance != null)
@@ -79,16 +84,29 @@ public class GameManager : MonoBehaviour
         {
             instance = this;
         }
+
+        ShowSplashScreen();
     }
 
     private void Start()
     {
-        SpawnPlayer();
+
+        topScore = PlayerPrefs.GetFloat("TopScore", 0f);
+        //PlayBackgroundMusic musicManager = Object.FindFirstObjectByType<PlayBackgroundMusic>();
+        //musicManager.PlayMenuMusic();
     }
 
     private void Update()
     {
-        StartGameplay();
+        if (gameplayState.activeInHierarchy)
+        {
+            StartGameplay();
+        }
+
+        if (currentLevelData.players.Count > 0 && currentLevelData.players[0].pawn == null)
+        {
+            ShowGameOver();
+        }
     }
 
     public void SpawnPlayer()
@@ -104,7 +122,7 @@ public class GameManager : MonoBehaviour
 
         // Instantiate the pawn at the same position and rotation
         GameObject pawnObj = Instantiate(playerPawnPrefab, spawnPosition, spawnRotation);
-        Pawn pawn = pawnObj.GetComponent<Pawn>();
+        PlayerPawn pawn = pawnObj.GetComponent<PlayerPawn>();
         
 
 
@@ -120,7 +138,7 @@ public class GameManager : MonoBehaviour
     }
 
 
-    public void SpawnAstronauts()
+   /* public void SpawnAstronauts()
     {
         foreach (Transform point in currentLevelData.astronautSpawnPoints)
         {
@@ -134,33 +152,48 @@ public class GameManager : MonoBehaviour
         {
             Instantiate(healthPackPrefab, point.position, point.rotation);
         }
-    }
+    }*/
 
-    public void SpawnEnemies()
+    public void SpawnEnemy()
     {
-        foreach (Transform point in currentLevelData.enemySpawnPoints)
+        if (currentLevelData == null)
         {
-            GameObject enemyToSpawn = GetRandomEnemy(); // UFO or meteor
-            GameObject enemyObj = Instantiate(enemyToSpawn, point.position, point.rotation);
+            return;
+        }
 
-            // Only do controller + pawn hookup if it's a UFO
-            if (enemyToSpawn == ufoPrefab)
+        // Pick one random spawn point
+        if (currentLevelData.enemySpawnPoints.Count == 0)
+        {
+            return;
+        }
+
+        Transform randomPoint = currentLevelData.enemySpawnPoints[Random.Range(0, currentLevelData.enemySpawnPoints.Count)];
+
+        GameObject enemyToSpawn = GetRandomEnemy();
+        GameObject enemyObj = Instantiate(enemyToSpawn, randomPoint.position, randomPoint.rotation);
+
+        // Track the enemy
+        currentLevelData.activeEnemies.Add(enemyObj);
+        currentLevelData.initialEnemiesSpawned++;
+
+        // Hook up controller + pawn if it's a UFO
+        if (enemyToSpawn == ufoPrefab)
+        {
+            UFOController controller = enemyObj.AddComponent<UFOController>();
+            UFOPawn pawn = enemyObj.GetComponent<UFOPawn>();
+
+            if (pawn != null)
             {
-                UFOController controller = enemyObj.AddComponent<UFOController>();
-                UFOPawn pawn = enemyObj.GetComponent<UFOPawn>();
-
-                if (pawn != null)
-                {
-                    controller.pawn = pawn;
-                    controller.playerTarget = objectToFollow; // usually the player
-                }
-                else
-                {
-                    Debug.LogWarning("UFOPawn component missing on ufoPrefab.");
-                }
+                controller.pawn = pawn;
+                controller.playerTarget = objectToFollow;
+            }
+            else
+            {
+                Debug.LogWarning("UFOPawn component missing on ufoPrefab.");
             }
         }
     }
+
 
 
     public GameObject GetRandomEnemy()
@@ -207,17 +240,31 @@ public class GameManager : MonoBehaviour
     }
     public void SpawnHealPickup()
     {
-        if (currentLevelData.players.Count == 0 || currentLevelData.players[0].pawn == null)
+        if (currentLevelData.healPackSpawnPoints.Count == 0)
+        {
+            return;
+        }
+        Transform spawnPoint = currentLevelData.healPackSpawnPoints[Random.Range(0, currentLevelData.healPackSpawnPoints.Count)];
+
+        GameObject pickup = Instantiate(healthPackPrefab, spawnPoint.position, spawnPoint.rotation);
+        currentLevelData.activeHealPickups.Add(pickup);
+    }
+
+    public void SpawnAstronaut()
+    {
+        // Do nothing if there are no spawn points assigned
+        if (currentLevelData.astronautSpawnPoints.Count == 0)
         {
             return;
         }
 
-        Vector3 playerPos = currentLevelData.players[0].pawn.transform.position;
-        Vector3 offset = new Vector3(Random.Range(-5f, 5f), Random.Range(-5f, 5f), 0f);
-        Vector3 spawnPos = playerPos + offset;
+        // Pick a random spawn point from the list
+        Transform spawnPoint = currentLevelData.astronautSpawnPoints[Random.Range(0, currentLevelData.astronautSpawnPoints.Count)];
 
-        GameObject pickup = Instantiate(healthPackPrefab, spawnPos, Quaternion.identity);
-        currentLevelData.activeHealPickups.Add(pickup);
+        // Create the astronaut and track it
+        GameObject astronautObj = Instantiate(astronautPrefab, spawnPoint.position, spawnPoint.rotation);
+        currentLevelData.activeAstronauts.Add(astronautObj);
+        currentLevelData.initialAstronautsSpawned++;
     }
 
     public bool IsPlayerAlive()
@@ -235,7 +282,7 @@ public class GameManager : MonoBehaviour
         currentLevelData.enemySpawnTimer += Time.deltaTime;
         if (currentLevelData.enemySpawnTimer >= currentLevelData.enemySpawnInterval && currentLevelData.initialEnemiesSpawned < currentLevelData.enemyCount)
         {
-            SpawnEnemies();
+            SpawnEnemy();
             currentLevelData.enemySpawnTimer = 0f;
         }
 
@@ -246,5 +293,186 @@ public class GameManager : MonoBehaviour
             SpawnHealPickup();
             currentLevelData.healSpawnTimer = 0f;
         }
+
+        currentLevelData.astronautSpawnTimer += Time.deltaTime;
+        if (currentLevelData.astronautSpawnTimer >= currentLevelData.astronautSpawnInterval && currentLevelData.initialAstronautsSpawned < currentLevelData.astronautCount)
+        {
+            SpawnAstronaut();
+            currentLevelData.astronautSpawnTimer = 0f;
+        }
+    }
+    public void ShowSplashScreen()
+    {
+        splashScreenState.SetActive(true);
+        mainMenuState.SetActive(false);
+        gameplayState.SetActive(false);
+        gameOverState.SetActive(false);
+        creditsState.SetActive(false);
+        controlsState.SetActive(false);
+        settingsState.SetActive(false);
+    }
+
+    public void ShowMainMenu()
+    {
+        splashScreenState.SetActive(false);
+        mainMenuState.SetActive(true);
+        gameplayState.SetActive(false);
+        gameOverState.SetActive(false);
+        creditsState.SetActive(false);
+        controlsState.SetActive(false);
+        settingsState.SetActive(false);
+
+    }
+
+    public void ShowGameplay()
+    {
+        splashScreenState.SetActive(false);
+        mainMenuState.SetActive(false);
+        gameplayState.SetActive(true);
+        gameOverState.SetActive(false);
+        creditsState.SetActive(false);
+        controlsState.SetActive(false);
+        settingsState.SetActive(false);
+
+        Camera mainCam = Camera.main;
+        if (mainCam != null)
+        {
+            AudioListener listener = mainCam.GetComponent<AudioListener>();
+            if (listener != null)
+            {
+                listener.enabled = false;
+            }
+        }
+
+
+        gameplayUI.InitializeLives(startingLives);
+        gameplayUI.UpdateLives(startingLives);
+
+        currentLevelData.players = new List<PlayerController>();
+        currentLevelData.enemySpawnTimer = 0f;
+        currentLevelData.healSpawnTimer = 0f;
+        score = 0f;
+        currentLevelData.initialEnemiesSpawned = 0;
+
+        AudioListener playerListener = playerPawnPrefab.GetComponent<AudioListener>();
+        if (playerListener != null)
+        {
+            playerListener.enabled = true;
+        }
+
+        /*PlayBackgroundMusic musicManager = Object.FindFirstObjectByType<PlayBackgroundMusic>();
+        musicManager.PlayGameplayMusic();*/
+
+
+
+        currentLevelData.activeEnemies.Clear();
+        SpawnPlayer();
+
+
+    }
+
+    public void ShowGameOver()
+    {
+        splashScreenState.SetActive(false);
+        mainMenuState.SetActive(false);
+        gameplayState.SetActive(false);
+        gameOverState.SetActive(true);
+        creditsState.SetActive(false);
+        controlsState.SetActive(false);
+        settingsState.SetActive(false);
+
+        // Destroy enemies
+        foreach (GameObject enemy in currentLevelData.activeEnemies)
+        {
+            if (enemy != null)
+            {
+                Destroy(enemy);
+            }
+        }
+        currentLevelData.activeEnemies.Clear();
+
+        // Destroy players (controller + pawn)
+        foreach (PlayerController controller in currentLevelData.players)
+        {
+            if (controller != null)
+            {
+                // Destroy the pawn GameObject if present
+                if (controller.pawn != null)
+                {
+                    Destroy(controller.pawn.gameObject);
+                }
+
+                // Destroy the controller object
+                Destroy(controller.gameObject);
+            }
+        }
+        currentLevelData.players.Clear();
+
+        // Destroy heal pickups that were tracked
+        foreach (GameObject pickup in currentLevelData.activeHealPickups)
+        {
+            if (pickup != null)
+            {
+                Destroy(pickup);
+            }
+        }
+        currentLevelData.activeHealPickups.Clear();
+
+        GameOverUI gameOverUI = gameOverState.GetComponentInChildren<GameOverUI>();
+        if (gameOverUI != null)
+        {
+            gameOverUI.ShowResults();
+        }
+
+        Camera mainCam = Camera.main;
+        if (mainCam != null)
+        {
+            AudioListener listener = mainCam.GetComponent<AudioListener>();
+            if (listener != null)
+            {
+                listener.enabled = true;
+            }
+        }
+
+        /*PlayBackgroundMusic musicManager = Object.FindFirstObjectByType<PlayBackgroundMusic>();
+        musicManager.PlayMenuMusic();*/
+    }
+
+
+    public void ShowCreditsScreen()
+    {
+        splashScreenState.SetActive(false);
+        mainMenuState.SetActive(false);
+        gameplayState.SetActive(false);
+        gameOverState.SetActive(false);
+        creditsState.SetActive(true);
+        controlsState.SetActive(false);
+        settingsState.SetActive(false);
+    }
+
+    public void ShowControlsScreen()
+    {
+        splashScreenState.SetActive(false);
+        mainMenuState.SetActive(false);
+        gameplayState.SetActive(false);
+        gameOverState.SetActive(false);
+        creditsState.SetActive(false);
+        controlsState.SetActive(true);
+        settingsState.SetActive(false);
+    }
+
+    public void ShowSettingsScreen()
+    {
+        splashScreenState.SetActive(false);
+        mainMenuState.SetActive(false);
+        gameplayState.SetActive(false);
+        gameOverState.SetActive(false);
+        creditsState.SetActive(false);
+        controlsState.SetActive(false);
+        settingsState.SetActive(true);
+    }
+    public void QuitGame()
+    {
+        Application.Quit();
     }
 }

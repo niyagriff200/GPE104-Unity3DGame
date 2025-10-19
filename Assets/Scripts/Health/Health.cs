@@ -18,6 +18,7 @@ public class Health : MonoBehaviour
     public virtual void TakeDamage(float amount)
     {
         currentHealth -= amount;
+        Debug.Log("Current health: " + currentHealth);
         currentHealth = Mathf.Max(currentHealth, 0f); // clamp to zero
 
         if (currentHealth == 0f)

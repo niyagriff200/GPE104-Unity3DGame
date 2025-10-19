@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class PlayerController : Controller
 {
-    public Pawn pawn;
+    public PlayerPawn pawn;
 
     private void Update()
     {
@@ -55,6 +55,12 @@ public class PlayerController : Controller
             }
 
             pawn.Rotate(rotationVector, false);
+
+            // Shoot (Space)
+            if (Input.GetKeyDown(KeyCode.Space))
+            {
+                pawn.Shoot();
+            }
         }
     }
 }
