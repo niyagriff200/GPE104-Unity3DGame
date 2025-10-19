@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SocialPlatforms.Impl;
+using static UnityEditor.Experimental.GraphView.GraphView;
 
 public class GameManager : MonoBehaviour
 {
@@ -54,11 +55,12 @@ public class GameManager : MonoBehaviour
     public float ufoFireRate;
     public float ufoProjectileSpeed;
     public float ufoMaxHealth;
-    public float ufoSpawnInterval;  
+    public float ufoSpawnInterval;
 
+    [Header("Projectile Settings")]
+    public float projectileLifetime;
+    public float projectileDamage;
 
-    [Header("Health Pack Settings")]
-    public float healAmount;
 
     [Header("Score Value Settings")]
     public float astronautScore;
@@ -82,6 +84,11 @@ public class GameManager : MonoBehaviour
     private void Start()
     {
         SpawnPlayer();
+    }
+
+    private void Update()
+    {
+        StartGameplay();
     }
 
     public void SpawnPlayer()
@@ -196,6 +203,48 @@ public class GameManager : MonoBehaviour
             topScore = score;
             PlayerPrefs.SetFloat("TopScore", topScore);
             PlayerPrefs.Save();
+        }
+    }
+    public void SpawnHealPickup()
+    {
+        if (currentLevelData.players.Count == 0 || currentLevelData.players[0].pawn == null)
+        {
+            return;
+        }
+
+        Vector3 playerPos = currentLevelData.players[0].pawn.transform.position;
+        Vector3 offset = new Vector3(Random.Range(-5f, 5f), Random.Range(-5f, 5f), 0f);
+        Vector3 spawnPos = playerPos + offset;
+
+        GameObject pickup = Instantiate(healthPackPrefab, spawnPos, Quaternion.identity);
+        currentLevelData.activeHealPickups.Add(pickup);
+    }
+
+    public bool IsPlayerAlive()
+    {
+        return currentLevelData.players.Count > 0 && currentLevelData.players[0].pawn != null;
+    }
+
+    public void StartGameplay()
+    {
+        if (!IsPlayerAlive())
+        {
+            return;
+        }
+        // Meteor spawning
+        currentLevelData.enemySpawnTimer += Time.deltaTime;
+        if (currentLevelData.enemySpawnTimer >= currentLevelData.enemySpawnInterval && currentLevelData.initialEnemiesSpawned < currentLevelData.enemyCount)
+        {
+            SpawnEnemies();
+            currentLevelData.enemySpawnTimer = 0f;
+        }
+
+        // Heal pickup spawning
+        currentLevelData.healSpawnTimer += Time.deltaTime;
+        if (currentLevelData.healSpawnTimer >= currentLevelData.healSpawnInterval)
+        {
+            SpawnHealPickup();
+            currentLevelData.healSpawnTimer = 0f;
         }
     }
 }

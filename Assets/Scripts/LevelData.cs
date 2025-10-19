@@ -27,8 +27,14 @@ public class LevelData : MonoBehaviour
     public int enemyCount;
     [Range(0f, 1f)] public float ufoChance;
     public float enemySpawnInterval;
-    private float enemySpawnTimer;
+    public float enemySpawnTimer;
     [HideInInspector] public int initialEnemiesSpawned = 0;
+
+    [Header("Heal Pickup Settings")]
+    public float healAmount;
+    public float healSpawnInterval;
+    public float healSpawnTimer;
+    public List<GameObject> activeHealPickups = new List<GameObject>();
 
     // This component only stores level-specific data so the GameManager or LevelLoader
     // can use it later. It does not perform any logic itself.

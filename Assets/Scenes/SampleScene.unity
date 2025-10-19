@@ -224,6 +224,7 @@ MonoBehaviour:
   ufoPrefab: {fileID: 3534753719346121905, guid: c94575d8854d8154a82e06ce8b2e07e4, type: 3}
   meteorPrefab: {fileID: 4159394545718109379, guid: f5d19d7a2fb1c234dbd3cc295e84831d, type: 3}
   healthPackPrefab: {fileID: 1336718897693405917, guid: e531772def2b3c14eaebdfd409907d38, type: 3}
+  projectilePrefab: {fileID: 576313796462831108, guid: 87fbb11a2bb11fb45a47e706c09338db, type: 3}
   backgroundMusic: {fileID: 0}
   shootSound: {fileID: 0}
   scoreSound: {fileID: 0}
@@ -233,18 +234,23 @@ MonoBehaviour:
   lookOffset: {x: 0, y: 0, z: 0}
   cameraMoveSpeed: 10
   cameraRotationSpeed: 180
-  playerMoveForce: 10
+  playerMoveSpeed: 10
   playerTurnSpeed: 360
   playerFireRate: 0
   playerProjectileSpeed: 0
-  playerMaxHealth: 0
+  playerMaxHealth: 100
   playerStartingLives: 0
   ufoMoveSpeed: 0
+  ufoTurnSpeed: 0
   ufoFireRate: 0
   ufoProjectileSpeed: 0
-  ufoMaxHealth: 0
+  ufoMaxHealth: 75
   ufoSpawnInterval: 0
-  ufoChance: 0.5
+  projectileLifetime: 5
+  projectileDamage: 25
+  astronautScore: 25
+  score: 0
+  topScore: 0
 --- !u!4 &135487823
 Transform:
   m_ObjectHideFlags: 0
@@ -753,6 +759,16 @@ MonoBehaviour:
   - {fileID: 1948227077}
   - {fileID: 319353909}
   - {fileID: 113955513}
+  activeEnemies: []
+  enemyCount: 1
+  ufoChance: 0.3
+  enemySpawnInterval: 5
+  enemySpawnTimer: 0
+  initialEnemiesSpawned: 0
+  healAmount: 0
+  healSpawnInterval: 5
+  healSpawnTimer: 0
+  activeHealPickups: []
 --- !u!4 &504046092
 Transform:
   m_ObjectHideFlags: 0
