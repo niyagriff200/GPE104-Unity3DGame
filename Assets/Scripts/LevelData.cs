@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class LevelData : MonoBehaviour
@@ -7,6 +8,7 @@ public class LevelData : MonoBehaviour
 
     [Header("Player Settings")]
     public Transform playerSpawnPoint;
+    public List<PlayerController> players;
 
     [Header("Level Dimensions")]
     public Vector3 levelSize = new Vector3(100.0f, 100.0f, 100.0f);
@@ -16,11 +18,17 @@ public class LevelData : MonoBehaviour
     public Material groundMaterial;
 
     [Header("Spawn Points")]
-    public Transform[] enemySpawnPoints;
-    public Transform[] powerupSpawnPoints;
+    public List<Transform> enemySpawnPoints;
+    public List<Transform> healPackSpawnPoints;
+    public List<Transform> astronautSpawnPoints;
 
-    [Header("Camera Settings")]
-    public Transform cameraFocusPoint;
+    [Header("Enemy Spawn Settings")]
+    public List<GameObject> activeEnemies = new List<GameObject>();
+    public int enemyCount;
+    [Range(0f, 1f)] public float ufoChance;
+    public float enemySpawnInterval;
+    private float enemySpawnTimer;
+    [HideInInspector] public int initialEnemiesSpawned = 0;
 
     // This component only stores level-specific data so the GameManager or LevelLoader
     // can use it later. It does not perform any logic itself.

@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class PlayerPawn : Pawn
 {
-    private float moveForce;
+    private float moveSpeed;
     private float turnSpeed;
 
     protected override void Start()
@@ -19,7 +19,7 @@ public class PlayerPawn : Pawn
             Debug.LogWarning("There is no rigid body on " + gameObject.name);
         }
 
-        moveForce = GameManager.instance.playerMoveForce;
+        moveSpeed = GameManager.instance.playerMoveSpeed;
         turnSpeed = GameManager.instance.playerTurnSpeed;
 
     }
@@ -28,11 +28,11 @@ public class PlayerPawn : Pawn
     {
         if (isForce)
         {
-            rb.AddForce(moveVector * moveForce);
+            rb.AddForce(moveVector * moveSpeed);
         }
         else
         {
-            transform.position += moveVector * moveForce * Time.deltaTime;
+            transform.position += moveVector * moveSpeed * Time.deltaTime;
         }
             
     }
