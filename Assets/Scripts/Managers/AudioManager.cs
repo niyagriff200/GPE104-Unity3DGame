@@ -2,15 +2,34 @@ using UnityEngine;
 
 public class AudioManager : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    public AudioSource musicSource;
+
+    private void Start()
     {
-        
+        if (musicSource != null)
+        {
+            musicSource.loop = true;
+            musicSource.spatialBlend = 0f; // 2D sound
+        }
     }
 
-    // Update is called once per frame
-    void Update()
+    public void PlayMenuMusic()
     {
-        
+        if (musicSource != null)
+        {
+            musicSource.Stop();
+            musicSource.clip = GameManager.instance.backgroundMenuMusic;
+            musicSource.Play();
+        }
+    }
+
+    public void PlayGameplayMusic()
+    {
+        if (musicSource != null)
+        {
+            musicSource.Stop();
+            musicSource.clip = GameManager.instance.backgroundGameplayMusic;
+            musicSource.Play();
+        }
     }
 }

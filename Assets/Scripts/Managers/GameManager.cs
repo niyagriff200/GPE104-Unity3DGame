@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using UnityEngine;
-using static UnityEditor.Experimental.GraphView.GraphView;
 
 public class GameManager : MonoBehaviour
 {
@@ -32,10 +31,15 @@ public class GameManager : MonoBehaviour
     public GameObject ufoProjectilePrefab;
 
     [Header("Audio Clips")]
-    public AudioClip backgroundMusic;
+    public AudioClip backgroundMenuMusic;
+    public AudioClip backgroundGameplayMusic;
     public AudioClip shootSound;
-    public AudioClip scoreSound;
+    public AudioClip ufoSound;
     public AudioClip deathSound;
+    public AudioClip playerFinalDeathSound;
+    public AudioClip damageRockSound;
+    public AudioClip damageMetalSound;
+    public AudioClip healthPickupSound;
 
     [Header("Camera Settings")]
     public Transform objectToFollow; //Also used for UFO Controller
@@ -43,6 +47,9 @@ public class GameManager : MonoBehaviour
     public Vector3 lookOffset;
     public float cameraMoveSpeed;
     public float cameraRotationSpeed;
+    public float cameraMinOffsetDistance;
+    public float cameraMaxOffsetDistance;
+    public float cameraZoomSpeed;
 
     [Header("Player Settings")]
     public float playerMoveSpeed;
@@ -57,6 +64,9 @@ public class GameManager : MonoBehaviour
     public float ufoFireRate;
     public float ufoMaxHealth;
     public float ufoStoppingDistance;
+
+    [Header("Meteor Settings")]
+    public float meteorMoveSpeed;
 
     [Header("Projectile Settings")]
     public GameObject defaultProjectile;
@@ -130,29 +140,14 @@ public class GameManager : MonoBehaviour
         {
             controller.pawn = pawn;
             objectToFollow = pawn.transform;
+            Debug.Log("Camera target assigned: " + objectToFollow.name);
+
         }
         else
         {
             Debug.LogWarning("Pawn component missing on playerPawnPrefab.");
         }
     }
-
-
-   /* public void SpawnAstronauts()
-    {
-        foreach (Transform point in currentLevelData.astronautSpawnPoints)
-        {
-            Instantiate(astronautPrefab, point.position, point.rotation);
-        }
-    }
-
-    public void SpawnHealthPacks()
-    {
-        foreach (Transform point in currentLevelData.healPackSpawnPoints)
-        {
-            Instantiate(healthPackPrefab, point.position, point.rotation);
-        }
-    }*/
 
     public void SpawnEnemy()
     {
@@ -219,10 +214,10 @@ public class GameManager : MonoBehaviour
     {
         if (currentLevelData.activeEnemies.Contains(enemy)) currentLevelData.activeEnemies.Remove(enemy);
 
-        // Check for victory condition
-        if (currentLevelData.activeEnemies.Count == 0 && currentLevelData.initialEnemiesSpawned >= currentLevelData.enemyCount)
+        // Check for victory condition NOTE: CHANGED FROM ENEMIES DEATH TO ASTRONAUTS COLLECTED
+        if (currentLevelData.activeAstronauts.Count == 0 && currentLevelData.initialAstronautsSpawned >= currentLevelData.astronautCount)
         {
-            //ShowGameOver();
+            ShowGameOver();
         }
 
         
@@ -334,16 +329,6 @@ public class GameManager : MonoBehaviour
         controlsState.SetActive(false);
         settingsState.SetActive(false);
 
-        Camera mainCam = Camera.main;
-        if (mainCam != null)
-        {
-            AudioListener listener = mainCam.GetComponent<AudioListener>();
-            if (listener != null)
-            {
-                listener.enabled = false;
-            }
-        }
-
 
         gameplayUI.InitializeLives(startingLives);
         gameplayUI.UpdateLives(startingLives);
@@ -424,18 +409,8 @@ public class GameManager : MonoBehaviour
             gameOverUI.ShowResults();
         }
 
-        Camera mainCam = Camera.main;
-        if (mainCam != null)
-        {
-            AudioListener listener = mainCam.GetComponent<AudioListener>();
-            if (listener != null)
-            {
-                listener.enabled = true;
-            }
-        }
-
-        /*PlayBackgroundMusic musicManager = Object.FindFirstObjectByType<PlayBackgroundMusic>();
-        musicManager.PlayMenuMusic();*/
+        AudioManager musicManager = Object.FindFirstObjectByType<AudioManager>();
+        musicManager.PlayMenuMusic();
     }
 
 

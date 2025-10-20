@@ -26,9 +26,12 @@ public class ProjectileShooter : MonoBehaviour
             return;
         }
 
+        // Play shooting sound effect
+        GetComponent<AudioSource>().PlayOneShot(GameManager.instance.shootSound);
+
         Instantiate(projectilePrefab, projectileSpawnPoint.position, projectileSpawnPoint.rotation);
 
-        // CORRECTED LOGIC: Cooldown is 1 divided by the rate (shots per second).
+        // Cooldown is 1 divided by the rate (shots per second).
         if (fireRate > 0)
         {
             nextFireTime = Time.time + (1f / fireRate);

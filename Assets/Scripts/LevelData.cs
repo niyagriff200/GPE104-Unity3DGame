@@ -13,10 +13,6 @@ public class LevelData : MonoBehaviour
     [Header("Level Dimensions")]
     public Vector3 levelSize = new Vector3(100.0f, 100.0f, 100.0f);
 
-    [Header("Environment Settings")]
-    public AudioClip levelMusic;
-    public Material groundMaterial;
-
     [Header("Spawn Points")]
     public List<Transform> enemySpawnPoints;
     public List<Transform> healPackSpawnPoints;
