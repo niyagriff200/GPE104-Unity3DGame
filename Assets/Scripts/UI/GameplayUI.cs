@@ -44,15 +44,23 @@ public class GameplayUI : MonoBehaviour
         for (int i = 0; i < totalLives; i++)
         {
             GameObject icon = Instantiate(lifeIconPrefab, livesContainer);
+            Debug.Log("Lives container: " + livesContainer.name);
+            Debug.Log("Prefab assigned: " + (lifeIconPrefab != null));
+            Debug.Log("Total lives to spawn: " + totalLives);
+
             lifeIcons[i] = icon;
         }
+
     }
 
     public void UpdateLives(int currentLives)
     {
         // Toggle icons based on currentLives
+        Debug.Log("UpdateLives called with: " + currentLives);
+
         if (lifeIcons == null || lifeIcons.Length == 0)
         {
+            Debug.LogWarning("Life icons array is null or empty.");
             return;
         }
 

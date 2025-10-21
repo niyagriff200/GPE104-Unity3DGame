@@ -5,6 +5,7 @@ public class UFOPawn : Pawn
 {
     private float moveSpeed;
     private float turnSpeed;
+    private AudioSource humSource;
 
     protected override void Start()
     {
@@ -13,6 +14,13 @@ public class UFOPawn : Pawn
         shooter = GetComponent<UFOShooter>();
         moveSpeed = GameManager.instance.ufoMoveSpeed;
         turnSpeed = GameManager.instance.ufoTurnSpeed;
+
+        humSource = GetComponent<AudioSource>();
+        humSource.clip = GameManager.instance.ufoSound;
+        humSource.loop = true;
+        humSource.spatialBlend = 1f;
+        humSource.dopplerLevel = 1f;
+        humSource.Play();
     }
 
     public override void Move(Vector3 direction, bool isForce)

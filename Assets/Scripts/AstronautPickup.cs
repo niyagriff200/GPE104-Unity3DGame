@@ -13,6 +13,7 @@ public class AstronautPickup : MonoBehaviour
         PlayerPawn pawn = other.GetComponent<PlayerPawn>();
         if (pawn != null)
         {
+            AudioSource.PlayClipAtPoint(GameManager.instance.pickupSound, transform.position, 1f);
             GameManager.instance.AddScore(scoreValue);
             Destroy(gameObject);
         }

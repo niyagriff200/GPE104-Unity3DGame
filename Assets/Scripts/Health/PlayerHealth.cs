@@ -7,7 +7,7 @@ public class PlayerHealth : Health
     private int startingLives;
     private int currentLives;
 
-    protected override void Start()
+    public void Awake() //Placed in awake due to timing issues
     {
         // Pull health and lives values from GameManager for designer control
         maxHealth = GameManager.instance.playerMaxHealth;
@@ -25,8 +25,9 @@ public class PlayerHealth : Health
     protected override void Die()
     {
         currentLives--;
+        GameManager.instance.gameplayUI.UpdateLives(currentLives); // Update UI display
         Debug.Log("Current lives: " + currentLives);
-        
+
         // If player still has lives, reset health and reposition
         if (currentLives > 0)
         {
@@ -35,6 +36,13 @@ public class PlayerHealth : Health
             DeathRecenter recenter = GetComponent<DeathRecenter>();
             if (recenter != null)
             {
+                AudioSource.PlayClipAtPoint(GameManager.instance.deathSound, transform.position, 1f);
+                GameplayUI ui = FindFirstObjectByType<GameplayUI>();
+                if (ui != null)
+                {
+                    ui.UpdateLives(currentLives);
+                }
+
                 recenter.Die(); // Reset position instead of destroying
             }
 
@@ -46,6 +54,7 @@ public class PlayerHealth : Health
             DeathSpin spin = GetComponent<DeathSpin>();
             if (spin != null)
             {
+                AudioSource.PlayClipAtPoint(GameManager.instance.playerFinalDeathSound, transform.position, 1f);
                 spin.Die();
             }
         }

@@ -21,6 +21,7 @@ public class HealthPackPickup : MonoBehaviour
 
         if (playerHealth != null)
         {
+            AudioSource.PlayClipAtPoint(GameManager.instance.pickupSound, transform.position, 1f);
             playerHealth.Heal(healAmount);
             Destroy(gameObject);
         }

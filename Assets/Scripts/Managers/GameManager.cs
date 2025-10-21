@@ -39,7 +39,7 @@ public class GameManager : MonoBehaviour
     public AudioClip playerFinalDeathSound;
     public AudioClip damageRockSound;
     public AudioClip damageMetalSound;
-    public AudioClip healthPickupSound;
+    public AudioClip pickupSound;
 
     [Header("Camera Settings")]
     public Transform objectToFollow; //Also used for UFO Controller
@@ -50,6 +50,9 @@ public class GameManager : MonoBehaviour
     public float cameraMinOffsetDistance;
     public float cameraMaxOffsetDistance;
     public float cameraZoomSpeed;
+
+    [Header("Knockback Damage Settings")]
+    public float knockbackForce;
 
     [Header("Player Settings")]
     public float playerMoveSpeed;
@@ -67,6 +70,8 @@ public class GameManager : MonoBehaviour
 
     [Header("Meteor Settings")]
     public float meteorMoveSpeed;
+    public float meteorMaxHealth;
+    public float meteorDamage;
 
     [Header("Projectile Settings")]
     public GameObject defaultProjectile;
@@ -78,6 +83,7 @@ public class GameManager : MonoBehaviour
     [Header("Score Value Settings")]
     public float astronautScore;
     public float ufoScore;
+    public float meteorScore;
 
     [Header("Score Tracking")]
     public float score = 0f;
@@ -102,8 +108,8 @@ public class GameManager : MonoBehaviour
     {
 
         topScore = PlayerPrefs.GetFloat("TopScore", 0f);
-        //PlayBackgroundMusic musicManager = Object.FindFirstObjectByType<PlayBackgroundMusic>();
-        //musicManager.PlayMenuMusic();
+        AudioManager musicManager = Object.FindFirstObjectByType<AudioManager>();
+        musicManager.PlayMenuMusic();
     }
 
     private void Update()
@@ -140,8 +146,6 @@ public class GameManager : MonoBehaviour
         {
             controller.pawn = pawn;
             objectToFollow = pawn.transform;
-            Debug.Log("Camera target assigned: " + objectToFollow.name);
-
         }
         else
         {
@@ -214,8 +218,8 @@ public class GameManager : MonoBehaviour
     {
         if (currentLevelData.activeEnemies.Contains(enemy)) currentLevelData.activeEnemies.Remove(enemy);
 
-        // Check for victory condition NOTE: CHANGED FROM ENEMIES DEATH TO ASTRONAUTS COLLECTED
-        if (currentLevelData.activeAstronauts.Count == 0 && currentLevelData.initialAstronautsSpawned >= currentLevelData.astronautCount)
+        // Check for victory condition 
+        if (currentLevelData.activeEnemies.Count == 0 && currentLevelData.initialEnemiesSpawned >= currentLevelData.enemyCount)
         {
             ShowGameOver();
         }
@@ -289,6 +293,7 @@ public class GameManager : MonoBehaviour
             currentLevelData.healSpawnTimer = 0f;
         }
 
+        //Astronaut spawning
         currentLevelData.astronautSpawnTimer += Time.deltaTime;
         if (currentLevelData.astronautSpawnTimer >= currentLevelData.astronautSpawnInterval && currentLevelData.initialAstronautsSpawned < currentLevelData.astronautCount)
         {
@@ -329,15 +334,13 @@ public class GameManager : MonoBehaviour
         controlsState.SetActive(false);
         settingsState.SetActive(false);
 
-
-        gameplayUI.InitializeLives(startingLives);
-        gameplayUI.UpdateLives(startingLives);
-
         currentLevelData.players = new List<PlayerController>();
         currentLevelData.enemySpawnTimer = 0f;
         currentLevelData.healSpawnTimer = 0f;
         score = 0f;
         currentLevelData.initialEnemiesSpawned = 0;
+
+        SpawnPlayer();
 
         AudioListener playerListener = playerPawnPrefab.GetComponent<AudioListener>();
         if (playerListener != null)
@@ -345,16 +348,50 @@ public class GameManager : MonoBehaviour
             playerListener.enabled = true;
         }
 
-        /*PlayBackgroundMusic musicManager = Object.FindFirstObjectByType<PlayBackgroundMusic>();
-        musicManager.PlayGameplayMusic();*/
+        AudioManager musicManager = Object.FindFirstObjectByType<AudioManager>();
+        musicManager.PlayGameplayMusic();
 
+        Camera mainCam = Camera.main;
+        if (mainCam != null)
+        {
+            AudioListener listener = mainCam.GetComponent<AudioListener>();
+            if (listener != null)
+            {
+                listener.enabled = false;
+            }
+        }
 
+        if (currentLevelData.players.Count > 0)
+        {
+            PlayerController playerController = currentLevelData.players[0];
+            if (playerController != null)
+            {
+                PlayerPawn playerPawn = playerController.pawn;
+                if (playerPawn != null)
+                {
+                    Health baseHealth = playerPawn.health;
+                    if (baseHealth == null)
+                    {
+                        baseHealth = playerPawn.GetComponent<PlayerHealth>();
+                        if (baseHealth != null)
+                        {
+                            playerPawn.health = baseHealth;
+                        }
+                    }
 
-        currentLevelData.activeEnemies.Clear();
-        SpawnPlayer();
+                    PlayerHealth health = baseHealth as PlayerHealth;
+                    if (health != null)
+                    {
 
-
+                            gameplayUI.InitializeLives(health.GetCurrentLives());
+                           gameplayUI.UpdateLives(health.GetCurrentLives());
+                    }
+                }
+            }
+        }
     }
+
+
 
     public void ShowGameOver()
     {
@@ -407,6 +444,16 @@ public class GameManager : MonoBehaviour
         if (gameOverUI != null)
         {
             gameOverUI.ShowResults();
+        }
+
+        Camera mainCam = Camera.main;
+        if (mainCam != null)
+        {
+            AudioListener listener = mainCam.GetComponent<AudioListener>();
+            if (listener != null)
+            {
+                listener.enabled = true;
+            }
         }
 
         AudioManager musicManager = Object.FindFirstObjectByType<AudioManager>();

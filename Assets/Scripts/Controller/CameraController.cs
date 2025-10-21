@@ -7,8 +7,13 @@ public class CameraController : MonoBehaviour
     // Private fields to store the settings from the GameManager
     private Vector3 cameraOffset;
     private Vector3 lookOffset;
+    private Vector3 offsetDirection;
     private float moveSpeed;
     private float rotationSpeed;
+    private float currentOffsetDistance;
+    private float minOffsetDistance;
+    private float maxOffsetDistance;
+    private float zoomSpeed;
 
     private void Start()
     {
@@ -19,48 +24,53 @@ public class CameraController : MonoBehaviour
             lookOffset = GameManager.instance.lookOffset;
             moveSpeed = GameManager.instance.cameraMoveSpeed;
             rotationSpeed = GameManager.instance.cameraRotationSpeed;
+
+            offsetDirection = cameraOffset.normalized;
+            currentOffsetDistance = cameraOffset.magnitude;
+
+            minOffsetDistance = GameManager.instance.cameraMinOffsetDistance;
+            maxOffsetDistance = GameManager.instance.cameraMaxOffsetDistance;
+            zoomSpeed = GameManager.instance.cameraZoomSpeed;
+
         }
     }
 
-    private void LateUpdate() // Switched to LateUpdate for camera movement
+    private void LateUpdate() //Switched to LateUpdate for camera smoothness
     {
         if (GameManager.instance.gameplayState.activeInHierarchy)
         {
-
-
-            // 1. Check if we have a target to follow.
             if (objectToFollow == null)
             {
-                // 2. If not, try to get it from the GameManager.
                 objectToFollow = GameManager.instance.objectToFollow;
-
-                // 3. If no objectToFollow do nothing this frame.
                 if (objectToFollow == null)
                 {
                     return;
                 }
             }
 
-            // Calculate the desired camera position relative to the target's rotation and position.
-            Vector3 targetPosition = objectToFollow.position + objectToFollow.TransformDirection(cameraOffset);
+            // Handle zoom input
+            if (Input.GetKey(KeyCode.O))
+            {
+                currentOffsetDistance -= zoomSpeed * Time.deltaTime;
+            }
+            if (Input.GetKey(KeyCode.L))
+            {
+                currentOffsetDistance += zoomSpeed * Time.deltaTime;
+            }
+            currentOffsetDistance = Mathf.Clamp(currentOffsetDistance, minOffsetDistance, maxOffsetDistance);
+
+            // Recalculate offset based on zoom
+            Vector3 dynamicOffset = offsetDirection * currentOffsetDistance;
+
+            // Apply dynamic offset to camera position
+            Vector3 targetPosition = objectToFollow.position + objectToFollow.TransformDirection(dynamicOffset);
             transform.position = Vector3.Lerp(transform.position, targetPosition, moveSpeed * Time.deltaTime);
 
-            // Calculate the point the camera should look at.
+            // Apply look offset
             Vector3 lookAtPosition = objectToFollow.position + objectToFollow.TransformDirection(lookOffset);
             Quaternion targetRotation = Quaternion.LookRotation(lookAtPosition - transform.position);
             transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
-
-            Debug.Log("Camera current position: " + transform.position);
-            Debug.Log("Camera target position: " + targetPosition);
-
-            if (Input.GetKeyDown(KeyCode.O))
-            {
-
-            }
-            if (Input.GetKeyDown(KeyCode.L))
-            {
-
-            }
         }
     }
+
 }
