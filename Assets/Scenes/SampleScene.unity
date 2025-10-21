@@ -777,7 +777,7 @@ MonoBehaviour:
   meteorMoveSpeed: 1
   meteorDriftInterval: 5
   meteorMaxHealth: 25
-  meteorDamage: 15
+  meteorDamage: 25
   defaultProjectile: {fileID: 4382580813048248603, guid: a0a1b19068e25434a8f3b54b42ca59ac, type: 3}
   projectileLifetime: 2
   projectileSpeed: 10
@@ -2371,7 +2371,7 @@ MonoBehaviour:
   - {fileID: 113955513}
   activeEnemies: []
   enemyCount: 50
-  ufoChance: 0.3
+  ufoChance: 0.2
   enemySpawnInterval: 5
   enemySpawnTimer: 0
   initialEnemiesSpawned: 0
@@ -2380,7 +2380,7 @@ MonoBehaviour:
   healSpawnTimer: 0
   activeHealPickups: []
   activeAstronauts: []
-  astronautCount: 1
+  astronautCount: 50
   astronautSpawnInterval: 5
   astronautSpawnTimer: 0
   initialAstronautsSpawned: 0
