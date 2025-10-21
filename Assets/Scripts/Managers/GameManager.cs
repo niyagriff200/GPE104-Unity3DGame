@@ -70,6 +70,7 @@ public class GameManager : MonoBehaviour
 
     [Header("Meteor Settings")]
     public float meteorMoveSpeed;
+    public float meteorDriftInterval;
     public float meteorMaxHealth;
     public float meteorDamage;
 
@@ -217,15 +218,23 @@ public class GameManager : MonoBehaviour
     public void RemoveEnemy(GameObject enemy)
     {
         if (currentLevelData.activeEnemies.Contains(enemy)) currentLevelData.activeEnemies.Remove(enemy);
+        
+    }
 
-        // Check for victory condition 
-        if (currentLevelData.activeEnemies.Count == 0 && currentLevelData.initialEnemiesSpawned >= currentLevelData.enemyCount)
+    public void RemoveAstronaut(GameObject astronaut)
+    {
+        if (currentLevelData.activeAstronauts.Contains(astronaut)) currentLevelData.activeAstronauts.Remove(astronaut);
+        if (currentLevelData.activeAstronauts.Count == 0 && currentLevelData.initialAstronautsSpawned >= currentLevelData.astronautCount)
         {
             ShowGameOver();
         }
-
-        
     }
+
+    public void RemoveHealthPack(GameObject healPack)
+    {
+        if (currentLevelData.activeHealPickups.Contains(healPack)) currentLevelData.activeHealPickups.Remove(healPack);
+    }
+
     public void AddScore(float amount)
     {
         score += amount;
@@ -439,6 +448,8 @@ public class GameManager : MonoBehaviour
             }
         }
         currentLevelData.activeHealPickups.Clear();
+
+        
 
         GameOverUI gameOverUI = gameOverState.GetComponentInChildren<GameOverUI>();
         if (gameOverUI != null)

@@ -7,10 +7,7 @@ public class MeteorOnCollisionResponse : OnCollisionResponse
 
     protected override void Start()
     {
-        // Scale damage based on meteor size using multipliers from GameManager
-        float damage = GameManager.instance.meteorDamage;
-
-       
+        damageAmount = GameManager.instance.meteorDamage;
     }
 
     protected override void HandleDamage(GameObject other)

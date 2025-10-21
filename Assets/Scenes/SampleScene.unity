@@ -774,11 +774,12 @@ MonoBehaviour:
   ufoFireRate: 1
   ufoMaxHealth: 75
   ufoStoppingDistance: 10
-  meteorMoveSpeed: 3
+  meteorMoveSpeed: 1
+  meteorDriftInterval: 5
   meteorMaxHealth: 25
   meteorDamage: 15
   defaultProjectile: {fileID: 4382580813048248603, guid: a0a1b19068e25434a8f3b54b42ca59ac, type: 3}
-  projectileLifetime: 5
+  projectileLifetime: 2
   projectileSpeed: 10
   projectileDamage: 25
   astronautScore: 25
@@ -794,7 +795,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 135487821}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -2369,18 +2370,18 @@ MonoBehaviour:
   - {fileID: 319353909}
   - {fileID: 113955513}
   activeEnemies: []
-  enemyCount: 3
-  ufoChance: 1
+  enemyCount: 50
+  ufoChance: 0.3
   enemySpawnInterval: 5
   enemySpawnTimer: 0
   initialEnemiesSpawned: 0
   healAmount: 25
-  healSpawnInterval: 60
+  healSpawnInterval: 30
   healSpawnTimer: 0
   activeHealPickups: []
   activeAstronauts: []
-  astronautCount: 20
-  astronautSpawnInterval: 30
+  astronautCount: 1
+  astronautSpawnInterval: 5
   astronautSpawnTimer: 0
   initialAstronautsSpawned: 0
 --- !u!4 &504046092

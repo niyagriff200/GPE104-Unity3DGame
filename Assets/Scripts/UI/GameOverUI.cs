@@ -20,11 +20,13 @@ public class GameOverUI : MonoBehaviour
 
     public void PlayAgain()
     {
+        //Checks if instance of GameManager is true before showing gameplay
         GameManager.instance?.ShowGameplay();
     }
 
     public void MainMenu()
     {
+        //Checks if instance of GameManager is true before showing main menu
         GameManager.instance?.ShowMainMenu();
     }
 
@@ -32,9 +34,9 @@ public class GameOverUI : MonoBehaviour
     {
         bool playerWon = false;
 
-        // Win: all enemies defeated and enough were spawned
-        if (GameManager.instance.currentLevelData.activeEnemies.Count == 0 &&
-            GameManager.instance.currentLevelData.initialEnemiesSpawned >= GameManager.instance.currentLevelData.enemyCount)
+        // Win: all astronauts collected and enough were spawned
+        if (GameManager.instance.currentLevelData.activeAstronauts.Count == 0 &&
+            GameManager.instance.currentLevelData.initialAstronautsSpawned >= GameManager.instance.currentLevelData.astronautCount)
         {
             playerWon = true;
         }
@@ -47,6 +49,7 @@ public class GameOverUI : MonoBehaviour
         }
 
         // Update result text
+        //if player won is true result text = You Win! else, You Lose!
         resultsText.text = playerWon ? "You Win!" : "You Lose!";
     }
 }

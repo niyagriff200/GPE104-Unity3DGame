@@ -15,6 +15,7 @@ public class AstronautPickup : MonoBehaviour
         {
             AudioSource.PlayClipAtPoint(GameManager.instance.pickupSound, transform.position, 1f);
             GameManager.instance.AddScore(scoreValue);
+            GameManager.instance.RemoveAstronaut(gameObject);
             Destroy(gameObject);
         }
     }

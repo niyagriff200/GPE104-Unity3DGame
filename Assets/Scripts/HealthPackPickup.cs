@@ -23,6 +23,7 @@ public class HealthPackPickup : MonoBehaviour
         {
             AudioSource.PlayClipAtPoint(GameManager.instance.pickupSound, transform.position, 1f);
             playerHealth.Heal(healAmount);
+            GameManager.instance.RemoveHealthPack(gameObject);
             Destroy(gameObject);
         }
     }

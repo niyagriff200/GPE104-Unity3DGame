@@ -1,33 +1,26 @@
 using UnityEngine;
 
-// Moves an object in a random direction at a set speed
+// Applies movement based on direction from DriftDirection
+[RequireComponent(typeof(Rigidbody))]
 public class DirectionMover : MonoBehaviour
 {
-    private float moveSpeed;         // Movement speed pulled from GameManager
-    private Vector3 moveDirection;   // Direction to move in
+    private float moveSpeed;
+    private DriftDirection drift;
+    private Rigidbody rb;
 
     private void Start()
     {
-        GetRandomDirection(); // Initialize with a random direction
-    }
-
-    private void Update()
-    {
-        MoveForward(); // Continuously move in that direction
-    }
-
-    public void GetRandomDirection()
-    {
-        // Pull speed from GameManager and assign a random 2D direction
         moveSpeed = GameManager.instance.meteorMoveSpeed;
-        moveDirection = new Vector3(Random.Range(-1.0f, 1.0f), Random.Range(-1.0f, 1.0f));
+        drift = GetComponent<DriftDirection>();
+        rb = GetComponent<Rigidbody>();
     }
 
-    public void MoveForward()
+    private void FixedUpdate()
     {
-        // Normalize direction and apply movement based on speed and deltaTime
-        Vector3 moveVector = moveDirection.normalized;
-        moveVector *= moveSpeed * Time.deltaTime;
-        transform.position += moveVector;
+        if (drift != null && rb != null)
+        {
+            Vector3 moveVector = drift.GetDirection() * moveSpeed;
+            rb.linearVelocity = moveVector;
+        }
     }
 }

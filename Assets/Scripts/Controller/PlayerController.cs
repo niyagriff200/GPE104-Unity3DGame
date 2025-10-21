@@ -45,13 +45,13 @@ public class PlayerController : Controller
             }
 
             // Pitch (Z/X)
-            if (Input.GetKey(KeyCode.Z))
-            {
-                rotationVector.x += 1f;
-            }
             if (Input.GetKey(KeyCode.X))
             {
-                rotationVector.x -= 1f;
+                rotationVector.x += 1;
+            }
+            if (Input.GetKey(KeyCode.Z))
+            {
+                rotationVector.x -= 1;
             }
 
             pawn.Rotate(rotationVector, false);

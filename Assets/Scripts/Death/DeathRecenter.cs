@@ -3,7 +3,7 @@ using UnityEngine;
 // Recenter the player
 public class DeathRecenter : Death
 {
-    [SerializeField] private Transform defaultSpawnPoint;
+    private Transform defaultSpawnPoint;
 
     public override void Die()
     {
